@@ -1,1 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel - KelvinVMXZ</title>
+    <link rel="stylesheet" href="style/panel.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-skull"></i>
+            <span>KelvinVMXZ</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-page="attack">
+                <i class="fas fa-rocket"></i>
+                <span>Attack Hub</span>
+            </a>
+            <a href="#" class="nav-item" data-page="vps">
+                <i class="fas fa-server"></i>
+                <span>VPS Manager</span>
+            </a>
+            <a href="#" class="nav-item" data-page="check">
+                <i class="fas fa-search"></i>
+                <span>Check Host</span>
+            </a>
+            <a href="#" class="nav-item" data-page="history">
+                <i class="fas fa-history"></i>
+                <span>Attack History</span>
+            </a>
+            <a href="#" class="nav-item" data-page="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <i class="fas fa-user"></i>
+                <span id="username">User</span>
+            </div>
+            <a href="#" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </a>
+        </div>
+    </div>
 
+    <div class="main-content">
+        <header class="top-bar">
+            <h1 id="pageTitle">Dashboard</h1>
+            <div class="top-actions">
+                <button class="btn-stop" onclick="stopAllAttacks()">
+                    <i class="fas fa-stop"></i>
+                    Stop All
+                </button>
+                <button class="btn-primary" onclick="checkVPSStatus()">
+                    <i class="fas fa-sync"></i>
+                    Check VPS
+                </button>
+            </div>
+        </header>
+
+        <div class="content-area" id="contentArea">
+            <!-- Dashboard Content -->
+            <div id="dashboard" class="page-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-server"></i>
+                        <div>
+                            <h3 id="vpsTotal">0</h3>
+                            <p>Total VPS</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h3 id="vpsOnline">0</h3>
+                            <p>Online VPS</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-fire"></i>
+                        <div>
+                            <h3 id="ongoingAttacks">0</h3>
+                            <p>Ongoing Attacks</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-chart-line"></i>
+                        <div>
+                            <h3 id="totalAttacks">0</h3>
+                            <p>Total Attacks</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="panel-card">
+                        <h3>Ongoing Attacks</h3>
+                        <div id="ongoingList" class="attack-list">
+                            <p class="no-data">No ongoing attacks</p>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-card">
+                        <h3>Quick Attack</h3>
+                        <form id="quickAttackForm" class="quick-attack-form">
+                            <input type="text" id="quickTarget" placeholder="Target IP" required>
+                            <input type="number" id="quickPort" placeholder="Port" value="80" required>
+                            <input type="number" id="quickTime" placeholder="Time (seconds)" value="60" required>
+                            <select id="quickMethod" required>
+                                <option value="">Select Method</option>
+                                <option value="syn-pps">SYN-PPS</option>
+                                <option value="syn-gbps">SYN-GBPS</option>
+                                <option value="ack-pps">ACK-PPS</option>
+                                <option value="ack-gbps">ACK-GBPS</option>
+                                <option value="icmp-pps">ICMP-PPS</option>
+                                <option value="icmp-gbps">ICMP-GBPS</option>
+                            </select>
+                            <button type="submit" class="btn-attack">
+                                <i class="fas fa-rocket"></i>
+                                Launch Attack
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/attack.js"></script>
+    <script>
+        // Page navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = item.dataset.page;
+                loadPage(page);
+                
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        // Load page content
+        async function loadPage(page) {
+            const contentArea = document.getElementById('contentArea');
+            const pageTitle = document.getElementById('pageTitle');
+            
+            try {
+                const response = await fetch(`${page}.html`);
+                if (response.ok) {
+                    const html = await response.text();
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    const pageContent = tempDiv.querySelector('.page-content');
+                    
+                    if (pageContent) {
+                        contentArea.innerHTML = '';
+                        contentArea.appendChild(pageContent);
+                        pageTitle.textContent = page.charAt(0).toUpperCase() + page.slice(1);
+                        
+                        // Execute page-specific scripts
+                        if (page === 'attack') initAttackPage();
+                        if (page === 'vps') initVPSPage();
+                        if (page === 'check') initCheckPage();
+                        if (page === 'history') initHistoryPage();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading page:', error);
+            }
+        }
+
+        // Load dashboard stats
+        async function loadDashboardStats() {
+            try {
+                const response = await fetch('/api/stats', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('vpsTotal').textContent = stats.vps.total;
+                    document.getElementById('vpsOnline').textContent = stats.vps.online;
+                    document.getElementById('ongoingAttacks').textContent = stats.attacks.ongoing;
+                    document.getElementById('totalAttacks').textContent = stats.attacks.total;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load ongoing attacks
+        async function loadOngoingAttacks() {
+            try {
+                const response = await fetch('/api/attacks/ongoing', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                
+                if (response.ok) {
+                    const attacks = await response.json();
+                    const ongoingList = document.getElementById('ongoingList');
+                    
+                    if (attacks.length === 0) {
+                        ongoingList.innerHTML = '<p class="no-data">No ongoing attacks</p>';
+                    } else {
+                        ongoingList.innerHTML = attacks.map(attack => `
+                            <div class="attack-item">
+                                <div>
+                                    <strong>${attack.target}</strong>
+                                    <span>${attack.method}</span>
+                                </div>
+                                <div>
+                                    <span>${attack.time}</span>
+                                    <span class="status running">RUNNING</span>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading ongoing attacks:', error);
+            }
+        }
+
+        // Quick attack form
+        document.addEventListener('submit', async (e) => {
+            if (e.target.id === 'quickAttackForm') {
+                e.preventDefault();
+                await launchQuickAttack();
+            }
+        });
+
+        async function launchQuickAttack() {
+            const target = document.getElementById('quickTarget').value;
+            const port = document.getElementById('quickPort').value;
+            const time = document.getElementById('quickTime').value;
+            const method = document.getElementById('quickMethod').value;
+
+            if (!target || !port || !time || !method) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            const button = document.querySelector('.btn-attack');
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Launching...';
+
+            try {
+                const response = await fetch('/api/attack', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ target, port, time, method })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert(`Attack launched successfully! ${result.results.success}/${result.results.total} VPS nodes activated`);
+                    document.getElementById('quickAttackForm').reset();
+                    loadOngoingAttacks();
+                } else {
+                    alert(`Error: ${result.error}`);
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-rocket"></i> Launch Attack';
+            }
+        }
+
+        // Stop all attacks
+        async function stopAllAttacks() {
+            if (!confirm('Stop all ongoing attacks?')) return;
+
+            try {
+                const response = await fetch('/api/attacks/stop', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    alert('All attacks stopped successfully');
+                    loadOngoingAttacks();
+                } else {
+                    alert('Error stopping attacks');
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            }
+        }
+
+        // Check VPS status
+        async function checkVPSStatus() {
+            try {
+                const response = await fetch('/api/vps/check', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`VPS check complete: ${result.remaining} VPS online`);
+                    loadDashboardStats();
+                } else {
+                    alert('Error checking VPS status');
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            }
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check auth
+            if (!localStorage.getItem('token')) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Load user info
+            const token = localStorage.getItem('token');
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            document.getElementById('username').textContent = payload.username;
+
+            // Load initial data
+            loadDashboardStats();
+            loadOngoingAttacks();
+
+            // Auto refresh
+            setInterval(() => {
+                loadDashboardStats();
+                loadOngoingAttacks();
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
