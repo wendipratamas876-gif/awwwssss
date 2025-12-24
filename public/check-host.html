@@ -1,1 +1,37 @@
+<div id="check" class="page-content">
+  <div class="check-container">
+    <h2>Check Host</h2>
+    <form id="checkForm" onsubmit="checkHost(event)">
+      <input id="checkIP" placeholder="IP Address" required />
+      <input id="checkPort" placeholder="Port" value="80" required />
+      <select id="checkMode">
+        <option value="tcp">TCP</option>
+        <option value="udp">UDP</option>
+        <option value="ping">PING</option>
+      </select>
+      <button type="submit" class="btn-primary"><i class="fas fa-search"></i> Check</button>
+    </form>
+    <pre id="checkResult">Results will appear here...</pre>
+  </div>
+</div>
 
+<script>
+async function checkHost(e){
+  e.preventDefault();
+  const ip=document.getElementById('checkIP').value;
+  const port=document.getElementById('checkPort').value;
+  const mode=document.getElementById('checkMode').value;
+  document.getElementById('checkResult').textContent='Checking...';
+  try{
+    const res=await api.checkHost(ip,port,mode);
+    document.getElementById('checkResult').textContent=JSON.stringify(res,null,2);
+  }catch(err){
+    document.getElementById('checkResult').textContent='Error: '+err.message;
+  }
+}
+function initCheckPage(){}
+</script>
+
+<style>
+.check-container{padding:20px}#checkForm{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}#checkForm input,#checkForm select{flex:1;min-width:120px;padding:10px;background:rgba(0,0,0,.7);border:1px solid #00ff00;color:#00ff00;border-radius:5px}#checkResult{background:rgba(0,20,0,.8);border:1px solid #00ff00;border-radius:5px;padding:15px;max-height:400px;overflow:auto;font-size:13px}
+</style>
