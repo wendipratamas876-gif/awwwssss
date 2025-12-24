@@ -1,1 +1,52 @@
+<div id="vps" class="page-content">
+  <div class="vps-container">
+    <h2>VPS Manager</h2>
+    <button class="btn-primary" onclick="showAddVPSForm()"><i class="fas fa-plus"></i> Add VPS</button>
+    <button class="btn-primary" onclick="checkAllVPS()"><i class="fas fa-sync"></i> Check All</button>
 
+    <div id="vpsList" class="vps-grid"></div>
+
+    <div id="addVPSForm" class="modal" style="display:none;">
+      <div class="modal-content">
+        <span class="close" onclick="closeAddVPSForm()">&times;</span>
+        <h3>Add New VPS</h3>
+        <form id="formAddVPS" onsubmit="addVPS(event)">
+          <input id="vpsHost" placeholder="Host IP" required />
+          <input id="vpsUser" placeholder="Username (default: root)" />
+          <input id="vpsPass" type="password" placeholder="Password" required />
+          <button type="submit" class="btn-primary">Add VPS</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function loadVPSPage() {
+  const list = await api.getVPSList();
+  const container = document.getElementById('vpsList');
+  container.innerHTML = '';
+  list.forEach(vps => {
+    const card = document.createElement('div');
+    card.className = 'vps-card';
+    card.innerHTML = `
+      <div class="vps-info">
+        <strong>${vps.host}</strong><br>
+        <small>User: ${vps.username||'root'} | Status: ${vps.status||'unknown'}</small>
+      </div>
+      <button class="btn-delete" onclick="deleteVPS(${vps.id})"><i class="fas fa-trash"></i></button>
+    `;
+    container.appendChild(card);
+  });
+}
+function showAddVPSForm(){document.getElementById('addVPSForm').style.display='flex';}
+function closeAddVPSForm(){document.getElementById('addVPSForm').style.display='none';}
+async function addVPS(e){e.preventDefault();await api.addVPS({host:document.getElementById('vpsHost').value,username:document.getElementById('vpsUser').value||'root',password:document.getElementById('vpsPass').value});closeAddVPSForm();loadVPSPage();}
+async function deleteVPS(id){if(!confirm('Delete this VPS?'))return;await api.deleteVPS(id);loadVPSPage();}
+async function checkAllVPS(){await api.checkVPSStatus();loadVPSPage();}
+function initVPSPage(){loadVPSPage();}
+</script>
+
+<style>
+.vps-container{padding:20px}.vps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:15px;margin-top:20px}.vps-card{background:rgba(0,20,0,.8);border:1px solid #00ff00;border-radius:8px;padding:15px;display:flex;justify-content:space-between;align-items:center}.btn-delete{background:rgba(255,0,0,.2);border:1px solid #ff0000;color:#ff0000;padding:6px 10px;border-radius:4px;cursor:pointer}.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:999}.modal-content{background:#000;border:1px solid #00ff00;border-radius:10px;padding:25px;width:90%;max-width:400px}.close{float:right;font-size:24px;cursor:pointer;color:#00ff00}#formAddVPS{display:flex;flex-direction:gap:10px;margin-top:15px}#formAddVPS input{margin-bottom:10px;padding:10px;width:100%;background:rgba(0,0,0,.7);border:1px solid #00ff00;color:#00ff00;border-radius:5px}
+</style>
