@@ -1,1 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KelvinVMXZ - Advanced DDoS Panel</title>
+    <link rel="stylesheet" href="style/index.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="matrix-bg" id="matrixBg"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-skull"></i>
+                <span>KelvinVMXZ</span>
+            </div>
+            <div class="nav-links">
+                <a href="#home">Home</a>
+                <a href="#features">Features</a>
+                <a href="#methods">Methods</a>
+                <a href="#login">Login</a>
+            </div>
+        </div>
+    </nav>
 
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1 class="glitch" data-text="KELVINVMXZ">KELVINVMXZ</h1>
+            <p class="subtitle">Advanced DDoS Botnet Control Panel</p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <i class="fas fa-server"></i>
+                    <span id="vpsCount">0</span>
+                    <p>VPS Nodes</p>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-rocket"></i>
+                    <span id="methodCount">18</span>
+                    <p>Attack Methods</p>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-shield-alt"></i>
+                    <span id="attackCount">0</span>
+                    <p>Total Attacks</p>
+                </div>
+            </div>
+            <a href="login.html" class="cta-button">
+                <i class="fas fa-sign-in-alt"></i>
+                Access Panel
+            </a>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <h2>Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-bolt"></i>
+                <h3>High Power</h3>
+                <p>Up to 100+ Gbps combined power from multiple VPS nodes</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-globe"></i>
+                <h3>Global Nodes</h3>
+                <p>Worldwide VPS distribution for maximum impact</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-cogs"></i>
+                <h3>Auto Setup</h3>
+                <p>Automated VPS connection and attack deployment</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-chart-line"></i>
+                <h3>Real-time Stats</h3>
+                <p>Live attack monitoring and detailed reporting</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="methods" id="methods">
+        <h2>Attack Methods</h2>
+        <div class="methods-grid">
+            <div class="method-card">SYN-PPS</div>
+            <div class="method-card">SYN-GBPS</div>
+            <div class="method-card">ACK-PPS</div>
+            <div class="method-card">ACK-GBPS</div>
+            <div class="method-card">ICMP-PPS</div>
+            <div class="method-card">ICMP-GBPS</div>
+            <div class="method-card">RAND-UDP</div>
+            <div class="method-card">RAND-SYN</div>
+            <div class="method-card">UDP-MULTI</div>
+            <div class="method-card">SYN-RAND</div>
+            <div class="method-card">OBLIVION</div>
+            <div class="method-card">And More...</div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 KelvinVMXZ - Power is nothing without control</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        // Load stats
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('vpsCount').textContent = stats.vps.total;
+                    document.getElementById('attackCount').textContent = stats.attacks.total;
+                }
+            } catch (e) {
+                console.log('Stats loading failed');
+            }
+        }
+
+        // Matrix background
+        function initMatrix() {
+            const canvas = document.createElement('canvas');
+            canvas.className = 'matrix-canvas';
+            document.getElementById('matrixBg').appendChild(canvas);
+            
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const matrix = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}";
+            const matrixArray = matrix.split("");
+            
+            const fontSize = 10;
+            const columns = canvas.width / fontSize;
+            
+            const drops = [];
+            for(let x = 0; x < columns; x++) {
+                drops[x] = 1;
+            }
+            
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#0F0';
+                ctx.font = fontSize + 'px monospace';
+                
+                for(let i = 0; i < drops.length; i++) {
+                    const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+            
+            setInterval(draw, 35);
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            initMatrix();
+            loadStats();
+        });
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            const canvas = document.querySelector('.matrix-canvas');
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
+    </script>
+</body>
+</html>
