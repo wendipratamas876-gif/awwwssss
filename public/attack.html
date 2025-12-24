@@ -1,1 +1,221 @@
+<div id="attack" class="page-content">
+    <div class="attack-container">
+        <div class="attack-header">
+            <h2>Attack Hub</h2>
+            <p>Launch powerful DDoS attacks with advanced methods</p>
+        </div>
 
+        <form id="attackForm" class="attack-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Target IP</label>
+                    <input type="text" id="target" placeholder="192.168.1.1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Port</label>
+                    <input type="number" id="port" placeholder="80" value="80" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Duration (seconds)</label>
+                    <input type="number" id="time" placeholder="60" value="60" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Method</label>
+                    <select id="method" required>
+                        <option value="">Select Method</option>
+                        <optgroup label="Basic Methods">
+                            <option value="syn-pps">☠️ SYN-PPS (High Packet Rate)</option>
+                            <option value="syn-gbps">🚀 SYN-GBPS (Large Packets)</option>
+                            <option value="ack-pps">⚡ ACK-PPS (High Packet Rate)</option>
+                            <option value="ack-gbps">🔥 ACK-GBPS (Large Packets)</option>
+                            <option value="icmp-pps">🔨 ICMP-PPS (High Packet Rate)</option>
+                            <option value="icmp-gbps">💣 ICMP-GBPS (Large Packets)</option>
+                        </optgroup>
+                        <optgroup label="Advanced Methods">
+                            <option value="rand-udp">🌀 RAND-UDP (Random Source)</option>
+                            <option value="rand-syn">🌪️ RAND-SYN (Random Source)</option>
+                            <option value="rand-ack">⚡ RAND-ACK (Random Source)</option>
+                            <option value="udp-multi">🎯 UDP-MULTI (Multi-port)</option>
+                            <option value="syn-rand">🌪️ SYN-RAND (Advanced)</option>
+                            <option value="ack-rand">⚡ ACK-RAND (Advanced)</option>
+                            <option value="icmp-rand">📡 ICMP-RAND (Random)</option>
+                            <option value="oblivion">💀 OBLIVION (Ultimate)</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+
+            <div class="attack-actions">
+                <button type="submit" class="btn-attack-large">
+                    <i class="fas fa-rocket"></i>
+                    Launch Attack
+                </button>
+                <button type="button" class="btn-clear" onclick="clearForm()">
+                    <i class="fas fa-times"></i>
+                    Clear
+                </button>
+            </div>
+        </form>
+
+        <div class="attack-info">
+            <div class="info-card">
+                <h4>Attack Status</h4>
+                <div id="attackStatus" class="status-idle">
+                    <i class="fas fa-info-circle"></i>
+                    Ready to launch attack
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h4>Available VPS</h4>
+                <div id="vpsStatus" class="vps-counter">
+                    <i class="fas fa-server"></i>
+                    <span id="vpsCount">0</span> nodes available
+                </div>
+            </div>
+        </div>
+
+        <div class="methods-legend">
+            <h4>Method Legend</h4>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <span class="method-tag syn">SYN</span>
+                    <span>SYN Flood - TCP synchronization</span>
+                </div>
+                <div class="legend-item">
+                    <span class="method-tag ack">ACK</span>
+                    <span>ACK Flood - TCP acknowledgment</span>
+                </div>
+                <div class="legend-item">
+                    <span class="method-tag icmp">ICMP</span>
+                    <span>ICMP Flood - Ping flood</span>
+                </div>
+                <div class="legend-item">
+                    <span class="method-tag udp">UDP</span>
+                    <span>UDP Flood - UDP packets</span>
+                </div>
+                <div class="legend-item">
+                    <span class="method-tag rand">RAND</span>
+                    <span>Random Source - Spoofed IPs</span>
+                </div>
+                <div class="legend-item">
+                    <span class="method-tag special">SPECIAL</span>
+                    <span>Special methods - Combined attacks</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Attack page specific styles */
+.attack-container {
+    padding: 20px;
+}
+
+.attack-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.attack-header h2 {
+    color: #00ff00;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px #00ff00;
+}
+
+.attack-form {
+    background: rgba(0, 20, 0, 0.8);
+    border: 1px solid #00ff00;
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    color: #00ff00;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    box-shadow: 0 0 10px #00ff00;
+}
+
+.attack-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.btn-attack-large {
+    background: linear-gradient(45deg, #ff0000, #ff6600);
+    border: none;
+    color: white;
+    padding: 15px 40px;
+    border-radius: 25px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-attack-large:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255, 0, 0, 0.5);
+}
+
+.btn-clear {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #fff;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-clear:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.attack-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.info-card {
+    background: rgba
